@@ -33,11 +33,25 @@ class MasterKomponenController extends Controller
     {
         $validated = $request->validate([
             'nama_komponen' => ['nullable', 'string', 'max:255'],
-            'is_active' => ['boolean'],
         ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         $masterKomponen->update($validated);
 
         return redirect()->route('settings.master-komponen.index')->with('success', 'Master Komponen berhasil diperbarui.');
+    }
+
+    public function destroy(MasterKomponen $masterKomponen)
+    {
+        if ($masterKomponen->budgetCategories()->exists()) {
+            return back()->with('error', "Komponen \"{$masterKomponen->kode}\" masih dipakai di salah satu Pagu Anggaran, tidak bisa dihapus. Nonaktifkan saja.");
+        }
+
+        ActivityLog::catat('deleted', 'MasterKomponen', $masterKomponen->id, "Menghapus Master Komponen \"{$masterKomponen->kode}\"");
+
+        $masterKomponen->delete();
+
+        return redirect()->route('settings.master-komponen.index')->with('success', 'Master Komponen berhasil dihapus.');
     }
 }

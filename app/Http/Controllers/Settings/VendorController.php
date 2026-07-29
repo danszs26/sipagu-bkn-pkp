@@ -34,11 +34,25 @@ class VendorController extends Controller
         $validated = $request->validate([
             'nama_vendor' => ['required', 'string', 'max:255'],
             'keterangan' => ['nullable', 'string'],
-            'is_active' => ['boolean'],
         ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         $vendor->update($validated);
 
         return redirect()->route('settings.vendors.index')->with('success', 'Vendor berhasil diperbarui.');
+    }
+
+    public function destroy(Vendor $vendor)
+    {
+        if ($vendor->transactions()->exists()) {
+            return back()->with('error', "Vendor \"{$vendor->nama_vendor}\" masih dipakai di salah satu transaksi, tidak bisa dihapus. Nonaktifkan saja.");
+        }
+
+        ActivityLog::catat('deleted', 'Vendor', $vendor->id, "Menghapus vendor \"{$vendor->nama_vendor}\"");
+
+        $vendor->delete();
+
+        return redirect()->route('settings.vendors.index')->with('success', 'Vendor berhasil dihapus.');
     }
 }

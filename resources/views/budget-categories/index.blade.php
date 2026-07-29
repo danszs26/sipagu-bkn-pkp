@@ -34,7 +34,33 @@
                 @if ($tahunList->isEmpty())
                     <a href="{{ route('settings.anggaran-tahun.index') }}" class="text-sm text-blue-600 hover:underline">+ Buat Tahun Anggaran dulu di Settings</a>
                 @endif
-            </form>
+                </form>
+
+                @can('create', App\Models\BudgetCategory::class)
+                @if ($tahunTerpilih && $tahunList->count() > 1)
+                    <details class="bg-white rounded-lg shadow p-4">
+                        <summary class="text-sm text-blue-600 cursor-pointer font-medium">📋 Salin komponen/uraian dari Tahun Anggaran lain</summary>
+                        <form action="{{ route('budget-categories.copy') }}" method="POST" class="mt-3 flex flex-wrap items-end gap-3"
+                            onsubmit="return confirm('Salin semua komponen & uraian dari tahun yang dipilih ke tahun {{ $tahunTerpilih->tahun }}? Nilai pagu akan diisi placeholder Rp1, wajib diedit manual setelahnya.')">
+                            @csrf
+                            <input type="hidden" name="ke_tahun_anggaran_id" value="{{ $tahunTerpilih->id }}">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Salin dari Tahun</label>
+                                <select name="dari_tahun_anggaran_id" required class="rounded-md border-gray-300 text-sm">
+                                    <option value="">-- Pilih Tahun Sumber --</option>
+                                    @foreach ($tahunList as $t)
+                                        @if ($t->id !== $tahunTerpilih->id)
+                                            <option value="{{ $t->id }}">{{ $t->tahun }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-md text-sm">Salin Sekarang</button>
+                            <p class="text-xs text-gray-400 w-full mt-1">Hanya komponen & uraian yang disalin. Nilai pagu tetap harus diisi manual lewat Edit setelah disalin. Item yang sudah ada (sama komponen & uraiannya) di tahun tujuan tidak akan digandakan.</p>
+                        </form>
+                    </details>
+                @endif
+                @endcan
 
             @if ($tahunTerpilih)
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

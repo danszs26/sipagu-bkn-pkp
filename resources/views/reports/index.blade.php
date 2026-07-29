@@ -66,6 +66,71 @@
                 </p>
             </div>
 
+            {{-- ===== Total Pagu per Komponen/Akun ===== --}}
+            <div class="bg-white rounded-lg shadow p-5">
+                <div class="flex justify-between items-center flex-wrap gap-3 mb-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-700">Total Pagu per Komponen/Akun</h3>
+                        <p class="text-xs text-gray-500">Rekap gabungan seluruh sub-komponen dalam satu komponen, per Tahun Anggaran.</p>
+                    </div>
+                    <form method="GET" class="flex items-end gap-2">
+                        <select name="komponen_tahun_id" onchange="this.form.submit()" class="rounded-md border-gray-300 text-sm">
+                            @foreach ($tahunList as $t)
+                                <option value="{{ $t->id }}" {{ $komponenTahun && $komponenTahun->id === $t->id ? 'selected' : '' }}>
+                                    {{ $t->tahun }} {{ $t->is_active ? '(Berjalan)' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-50 text-left text-gray-600">
+                            <tr>
+                                <th class="px-4 py-2">Kode</th>
+                                <th class="px-4 py-2">Nama Komponen</th>
+                                <th class="px-4 py-2 text-center">Jumlah Item</th>
+                                <th class="px-4 py-2 text-right">Total Pagu</th>
+                                <th class="px-4 py-2 text-right">Total Terpakai</th>
+                                <th class="px-4 py-2 text-right">Sisa</th>
+                                <th class="px-4 py-2 text-center">% Serapan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            @forelse ($totalPerKomponen as $row)
+                                @php
+                                    $sisa = $row['total_pagu'] - $row['total_terpakai'];
+                                    $persen = $row['total_pagu'] > 0 ? round(($row['total_terpakai'] / $row['total_pagu']) * 100, 1) : 0;
+                                @endphp
+                                <tr>
+                                    <td class="px-4 py-2 font-mono font-semibold">{{ $row['komponen']->kode ?? '-' }}</td>
+                                    <td class="px-4 py-2">{{ $row['komponen']->nama_komponen ?? '-' }}</td>
+                                    <td class="px-4 py-2 text-center">{{ $row['jumlah_item'] }}</td>
+                                    <td class="px-4 py-2 text-right">Rp {{ number_format($row['total_pagu'], 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-right text-red-600">Rp {{ number_format($row['total_terpakai'], 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-right text-green-600">Rp {{ number_format($sisa, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-center">{{ $persen }}%</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Belum ada pagu anggaran untuk tahun ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                        @if ($totalPerKomponen->isNotEmpty())
+                            <tfoot>
+                                <tr class="bg-gray-50 font-semibold">
+                                    <td class="px-4 py-2" colspan="3">Total Keseluruhan</td>
+                                    <td class="px-4 py-2 text-right">Rp {{ number_format($totalPerKomponen->sum('total_pagu'), 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-right text-red-600">Rp {{ number_format($totalPerKomponen->sum('total_terpakai'), 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2 text-right text-green-600">Rp {{ number_format($totalPerKomponen->sum('total_pagu') - $totalPerKomponen->sum('total_terpakai'), 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2"></td>
+                                </tr>
+                            </tfoot>
+                        @endif
+                    </table>
+                </div>
+            </div>
+
             {{-- ===== Filter & laporan ad-hoc (fleksibel per tanggal/kategori) ===== --}}
             <form method="GET" class="bg-white rounded-lg shadow p-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
                 <div>

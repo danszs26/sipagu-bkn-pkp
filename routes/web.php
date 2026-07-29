@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/transaksi/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
         Route::get('/pagu-anggaran/tambah', [BudgetCategoryController::class, 'create'])->name('budget-categories.create');
+        Route::post('/pagu-anggaran/salin', [BudgetCategoryController::class, 'copyFrom'])->name('budget-categories.copy');
         Route::post('/pagu-anggaran', [BudgetCategoryController::class, 'store'])->name('budget-categories.store');
         Route::put('/pagu-anggaran/{budgetCategory}', [BudgetCategoryController::class, 'update'])->name('budget-categories.update');
 
@@ -64,10 +65,12 @@ Route::middleware('auth')->group(function () {
             Route::get('/master-komponen', [MasterKomponenController::class, 'index'])->name('master-komponen.index');
             Route::post('/master-komponen', [MasterKomponenController::class, 'store'])->name('master-komponen.store');
             Route::put('/master-komponen/{masterKomponen}', [MasterKomponenController::class, 'update'])->name('master-komponen.update');
+            Route::delete('/master-komponen/{masterKomponen}', [MasterKomponenController::class, 'destroy'])->name('master-komponen.destroy');
 
             Route::get('/vendor', [VendorController::class, 'index'])->name('vendors.index');
             Route::post('/vendor', [VendorController::class, 'store'])->name('vendors.store');
             Route::put('/vendor/{vendor}', [VendorController::class, 'update'])->name('vendors.update');
+            Route::delete('/vendor/{vendor}', [VendorController::class, 'destroy'])->name('vendors.destroy');
 
             Route::get('/pejabat', [PejabatController::class, 'index'])->name('pejabat.index');
             Route::post('/pejabat', [PejabatController::class, 'store'])->name('pejabat.store');

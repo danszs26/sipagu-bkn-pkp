@@ -10,6 +10,10 @@
                 <div class="bg-green-50 text-green-700 text-sm px-4 py-3 rounded-md border border-green-200">{{ session('success') }}</div>
             @endif
 
+            @if (session('error'))
+                <div class="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-md border border-red-200">{{ session('error') }}</div>
+            @endif
+
             <div class="bg-white rounded-lg shadow p-5">
                 <h3 class="font-semibold text-gray-700 mb-3">Tambah Vendor Baru</h3>
                 @if ($errors->any())
@@ -59,6 +63,10 @@
                                             <input type="checkbox" name="is_active" value="1" {{ $v->is_active ? 'checked' : '' }}> Aktif
                                         </label>
                                         <button type="submit" class="text-blue-600 hover:underline text-xs">Simpan</button>
+                                    </form>
+                                    <form action="{{ route('settings.vendors.destroy', $v) }}" method="POST" class="inline" onsubmit="return confirm('Hapus vendor {{ $v->nama_vendor }}? Tindakan ini tidak bisa dibatalkan.')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline text-xs mt-1">Hapus</button>
                                     </form>
                                 </td>
                             </tr>

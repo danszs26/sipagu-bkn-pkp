@@ -28,7 +28,32 @@ class ReportController extends Controller
         $periode = $request->input('periode', 'harian');
         $grouped = $this->groupByPeriode($data, $periode);
 
-        return view('reports.index', compact('data', 'categories', 'vendors', 'tahunList', 'summary', 'grouped', 'periode'));
+        // === Total Pagu per Komponen/Akun ===
+        $komponenTahun = $request->filled('komponen_tahun_id')
+            ? $tahunList->firstWhere('id', (int) $request->input('komponen_tahun_id'))
+            : ($tahunList->firstWhere('is_active', true) ?? $tahunList->first());
+
+        $totalPerKomponen = collect();
+        if ($komponenTahun) {
+            $totalPerKomponen = BudgetCategory::with('masterKomponen')
+                ->where('tahun_anggaran_id', $komponenTahun->id)
+                ->get()
+                ->groupBy('master_komponen_id')
+                ->map(function ($group) {
+                    return [
+                        'komponen' => $group->first()->masterKomponen,
+                        'jumlah_item' => $group->count(),
+                        'total_pagu' => $group->sum('pagu_anggaran'),
+                        'total_terpakai' => $group->sum('total_terpakai'),
+                    ];
+                })
+                ->sortBy(fn ($v) => $v['komponen']->kode ?? '');
+        }
+
+        return view('reports.index', compact(
+            'data', 'categories', 'vendors', 'tahunList', 'summary', 'grouped', 'periode',
+            'komponenTahun', 'totalPerKomponen'
+        ));
     }
 
     protected function buildQuery(Request $request)

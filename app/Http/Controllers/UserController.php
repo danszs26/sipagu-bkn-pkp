@@ -39,8 +39,9 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'role' => ['required', 'in:admin,bendahara,petugas'],
-            'is_active' => ['boolean'],
         ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         $user->update($validated);
 

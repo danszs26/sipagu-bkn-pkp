@@ -82,8 +82,9 @@ class BudgetCategoryController extends Controller
             'uraian' => ['required', 'string', 'max:255'],
             'pagu_anggaran' => ['required', 'numeric', 'min:1'],
             'keterangan' => ['nullable', 'string'],
-            'is_active' => ['boolean'],
         ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         $budgetCategory->update($validated);
 
@@ -98,5 +99,52 @@ class BudgetCategoryController extends Controller
 
         return redirect()->route('budget-categories.index', ['tahun_anggaran_id' => $budgetCategory->tahun_anggaran_id])
             ->with('success', 'Pagu anggaran berhasil diperbarui.');
+    }
+
+    public function copyFrom(Request $request)
+    {
+        $this->authorize('create', BudgetCategory::class);
+
+        $validated = $request->validate([
+            'dari_tahun_anggaran_id' => ['required', 'exists:anggaran_tahun,id'],
+            'ke_tahun_anggaran_id' => ['required', 'exists:anggaran_tahun,id', 'different:dari_tahun_anggaran_id'],
+        ]);
+
+        $sumber = BudgetCategory::where('tahun_anggaran_id', $validated['dari_tahun_anggaran_id'])->get();
+
+        $sudahAda = BudgetCategory::where('tahun_anggaran_id', $validated['ke_tahun_anggaran_id'])
+            ->get()
+            ->map(fn ($c) => $c->master_komponen_id . '|' . $c->uraian)
+            ->toArray();
+
+        $jumlahDisalin = 0;
+        foreach ($sumber as $item) {
+            $kunci = $item->master_komponen_id . '|' . $item->uraian;
+            if (in_array($kunci, $sudahAda)) {
+                continue; // sudah ada, jangan dobel
+            }
+
+            BudgetCategory::create([
+                'tahun_anggaran_id' => $validated['ke_tahun_anggaran_id'],
+                'master_komponen_id' => $item->master_komponen_id,
+                'uraian' => $item->uraian,
+                'pagu_anggaran' => 1, // placeholder, WAJIB diisi manual lewat Edit
+                'total_terpakai' => 0,
+                'keterangan' => $item->keterangan,
+                'is_active' => true,
+                'created_by' => $request->user()->id,
+            ]);
+            $jumlahDisalin++;
+        }
+
+        ActivityLog::catat(
+            action: 'created',
+            modelType: 'BudgetCategory',
+            modelId: null,
+            description: "Menyalin {$jumlahDisalin} komponen/uraian pagu dari tahun anggaran lain"
+        );
+
+        return redirect()->route('budget-categories.index', ['tahun_anggaran_id' => $validated['ke_tahun_anggaran_id']])
+            ->with('success', "Berhasil menyalin {$jumlahDisalin} komponen/uraian. Nilai pagu masing-masing masih Rp1 (placeholder) — silakan isi nilai sebenarnya lewat tombol Edit di tiap kartu.");
     }
 }

@@ -45,6 +45,7 @@ class ReportController extends Controller
                         'jumlah_item' => $group->count(),
                         'total_pagu' => $group->sum('pagu_anggaran'),
                         'total_terpakai' => $group->sum('total_terpakai'),
+                        'items' => $group->sortBy('uraian')->values(),
                     ];
                 })
                 ->sortBy(fn ($v) => $v['komponen']->kode ?? '');

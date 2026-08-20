@@ -97,14 +97,23 @@
                                 <th class="px-4 py-2 text-center">% Serapan</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y">
-                            @forelse ($totalPerKomponen as $row)
-                                @php
-                                    $sisa = $row['total_pagu'] - $row['total_terpakai'];
-                                    $persen = $row['total_pagu'] > 0 ? round(($row['total_terpakai'] / $row['total_pagu']) * 100, 1) : 0;
-                                @endphp
-                                <tr>
-                                    <td class="px-4 py-2 font-mono font-semibold">{{ $row['komponen']->kode ?? '-' }}</td>
+                        @forelse ($totalPerKomponen as $row)
+                            @php
+                                $sisa = $row['total_pagu'] - $row['total_terpakai'];
+                                $persen = $row['total_pagu'] > 0 ? round(($row['total_terpakai'] / $row['total_pagu']) * 100, 1) : 0;
+                            @endphp
+                            <tbody x-data="{ open: false }" class="divide-y">
+                                <tr @click="open = !open" class="cursor-pointer hover:bg-gray-50">
+                                    <td class="px-4 py-2 font-mono font-semibold">
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0"
+                                                :class="open ? 'rotate-180' : ''"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                                            </svg>
+                                            {{ $row['komponen']->kode ?? '-' }}
+                                        </span>
+                                    </td>
                                     <td class="px-4 py-2">{{ $row['komponen']->nama_komponen ?? '-' }}</td>
                                     <td class="px-4 py-2 text-center">{{ $row['jumlah_item'] }}</td>
                                     <td class="px-4 py-2 text-right">Rp {{ number_format($row['total_pagu'], 0, ',', '.') }}</td>
@@ -112,10 +121,51 @@
                                     <td class="px-4 py-2 text-right text-green-600">Rp {{ number_format($sisa, 0, ',', '.') }}</td>
                                     <td class="px-4 py-2 text-center">{{ $persen }}%</td>
                                 </tr>
-                            @empty
+                                <tr x-show="open" style="display: none;">
+                                    <td colspan="7" class="px-0 py-0 bg-gray-50">
+                                        <div class="px-6 py-3">
+                                            <p class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Rincian Sub-Komponen / Uraian</p>
+                                            <table class="w-full text-xs">
+                                                <thead>
+                                                    <tr class="text-gray-500 border-b border-gray-200">
+                                                        <th class="text-left py-1.5 font-medium">Uraian</th>
+                                                        <th class="text-right py-1.5 font-medium">Pagu</th>
+                                                        <th class="text-right py-1.5 font-medium">Terpakai</th>
+                                                        <th class="text-right py-1.5 font-medium">Sisa</th>
+                                                        <th class="text-center py-1.5 font-medium w-20">% Serapan</th>
+                                                        <th class="text-center py-1.5 font-medium w-16">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-200">
+                                                    @foreach ($row['items'] as $item)
+                                                        @php
+                                                            $sisaItem = $item->pagu_anggaran - $item->total_terpakai;
+                                                            $persenItem = $item->pagu_anggaran > 0 ? round(($item->total_terpakai / $item->pagu_anggaran) * 100, 1) : 0;
+                                                        @endphp
+                                                        <tr>
+                                                            <td class="py-2 pr-2">{{ $item->uraian }}</td>
+                                                            <td class="py-2 text-right">Rp {{ number_format($item->pagu_anggaran, 0, ',', '.') }}</td>
+                                                            <td class="py-2 text-right text-red-600">Rp {{ number_format($item->total_terpakai, 0, ',', '.') }}</td>
+                                                            <td class="py-2 text-right text-green-600">Rp {{ number_format($sisaItem, 0, ',', '.') }}</td>
+                                                            <td class="py-2 text-center">{{ $persenItem }}%</td>
+                                                            <td class="py-2 text-center">
+                                                                <span class="px-1.5 py-0.5 rounded-full text-[10px] {{ $item->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500' }}">
+                                                                    {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        @empty
+                            <tbody>
                                 <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Belum ada pagu anggaran untuk tahun ini.</td></tr>
-                            @endforelse
-                        </tbody>
+                            </tbody>
+                        @endforelse
                         @if ($totalPerKomponen->isNotEmpty())
                             <tfoot>
                                 <tr class="bg-gray-50 font-semibold">

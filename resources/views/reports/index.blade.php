@@ -226,11 +226,15 @@
                         <option value="bulanan" {{ $periode === 'bulanan' ? 'selected' : '' }}>Bulanan</option>
                     </select>
                 </div>
-                <div class="md:col-span-6 flex justify-between items-center pt-2">
+                <div class="md:col-span-6 flex flex-wrap justify-between items-end gap-3 pt-2">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">Terapkan Filter</button>
-                    <div class="space-x-2">
-                        <a href="{{ route('reports.export.excel', request()->query()) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">Export Excel</a>
-                        <a href="{{ route('reports.export.pdf', request()->query()) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">Export PDF</a>
+                    <div class="flex flex-wrap items-end gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal Cetak (untuk PDF)</label>
+                            <input type="date" name="tanggal_cetak" value="{{ request('tanggal_cetak', date('Y-m-d')) }}" class="rounded-md border-gray-300 text-sm">
+                        </div>
+                        <button type="submit" formaction="{{ route('reports.export.excel') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">Export Excel</button>
+                        <button type="submit" formaction="{{ route('reports.export.pdf') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">Export PDF</button>
                     </div>
                 </div>
             </form>

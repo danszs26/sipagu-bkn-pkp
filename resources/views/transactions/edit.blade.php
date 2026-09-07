@@ -42,6 +42,11 @@
                             vendorId: '{{ old('vendor_id', $transaction->vendor_id ?? '') }}',
                             vendorBaru: @js(old('vendor_baru', '')),
                             vendors: @js($vendors->map(fn($v) => ['id' => $v->id, 'nama' => $v->nama_vendor])->values()),
+                            get filteredVendors() {
+                                if (!this.vendorBaru) return this.vendors;
+                                const q = this.vendorBaru.toLowerCase();
+                                return this.vendors.filter(v => v.nama.toLowerCase().includes(q));
+                            },
                             get displayText() {
                                 if (this.vendorBaru) return this.vendorBaru;
                                 const found = this.vendors.find(v => v.id == this.vendorId);
@@ -71,9 +76,12 @@
                                     <button type="button" @click="pilihKosong()" class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-50">
                                         -- Tanpa Vendor --
                                     </button>
-                                    <template x-for="v in vendors" :key="v.id">
+                                    <template x-for="v in filteredVendors" :key="v.id">
                                         <button type="button" @click="pilihVendor(v)" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" x-text="v.nama"></button>
                                     </template>
+                                    <p x-show="vendorBaru && filteredVendors.length === 0" style="display:none;" class="px-3 py-2 text-xs text-gray-400 italic">
+                                        Tidak ditemukan — akan dibuat vendor baru "<span x-text="vendorBaru"></span>" saat disimpan.
+                                    </p>
                                 </div>
                             </div>
                         </div>

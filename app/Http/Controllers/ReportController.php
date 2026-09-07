@@ -106,10 +106,12 @@ class ReportController extends Controller
         $transactions = $this->buildQuery($request)->get();
 
         $summary = ['total_pengeluaran' => $transactions->sum('nominal')];
+        $tanggalCetak = $request->filled('tanggal_cetak') ? $request->input('tanggal_cetak') : now()->format('Y-m-d');
+        $pejabat = PejabatPenandatangan::where('is_active', true)->first();
 
         ActivityLog::catat('exported', 'Transaction', null, 'Export laporan ke PDF (' . $transactions->count() . ' baris)');
 
-        $pdf = Pdf::loadView('reports.pdf', compact('transactions', 'summary'))->setPaper('a4', 'landscape');
+        $pdf = Pdf::loadView('reports.pdf', compact('transactions', 'summary', 'tanggalCetak', 'pejabat'))->setPaper('a4', 'landscape');
         return $pdf->download('laporan-keuangan-' . now()->format('Ymd-His') . '.pdf');
     }
 

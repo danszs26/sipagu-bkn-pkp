@@ -14,7 +14,6 @@ class BudgetCategoryController extends Controller
     {
         $tahunList = AnggaranTahun::orderByDesc('tahun')->get();
 
-        // Default: tahun yang sedang aktif, atau tahun terbaru kalau belum ada yang aktif
         $tahunTerpilih = $request->filled('tahun_anggaran_id')
             ? $tahunList->firstWhere('id', (int) $request->input('tahun_anggaran_id'))
             : ($tahunList->firstWhere('is_active', true) ?? $tahunList->first());
@@ -26,7 +25,18 @@ class BudgetCategoryController extends Controller
                 ->get()
             : collect();
 
-        return view('budget-categories.index', compact('categories', 'tahunList', 'tahunTerpilih'));
+        $perKomponen = $categories->groupBy('master_komponen_id')->map(function ($group) {
+            return [
+                'komponen' => $group->first()->masterKomponen,
+                'items' => $group->sortBy('uraian')->values(),
+                'total_pagu' => $group->sum('pagu_anggaran'),
+                'total_terpakai' => $group->sum('total_terpakai'),
+            ];
+        })->sortBy(fn ($v) => $v['komponen']->kode ?? '');
+
+        $komponenList = MasterKomponen::where('is_active', true)->orderBy('kode')->get();
+
+        return view('budget-categories.index', compact('categories', 'tahunList', 'tahunTerpilih', 'perKomponen', 'komponenList'));
     }
 
     public function create(Request $request)

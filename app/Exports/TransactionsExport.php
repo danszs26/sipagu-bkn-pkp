@@ -4,13 +4,16 @@ namespace App\Exports;
 
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TransactionsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class TransactionsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnFormatting
 {
+    protected int $nomor = 0;
+
     public function __construct(protected Collection $transactions) {}
 
     public function collection(): Collection
@@ -20,23 +23,27 @@ class TransactionsExport implements FromCollection, WithHeadings, WithMapping, W
 
     public function headings(): array
     {
-        return [
-            'No Referensi', 'Tanggal', 'Komponen', 'Uraian Pagu', 'Vendor',
-            'Uraian Transaksi', 'Nominal (Rp)', 'Diinput Oleh',
-        ];
+        return ['No', 'Tanggal', 'Uraian Pagu', 'Vendor', 'Uraian Transaksi', 'Nominal (Rp)'];
     }
 
     public function map($transaction): array
     {
+        $this->nomor++;
+
         return [
-            $transaction->no_referensi,
+            $this->nomor,
             $transaction->tanggal->format('d-m-Y'),
-            $transaction->budgetCategory->masterKomponen->kode ?? '-',
             $transaction->budgetCategory->uraian ?? '-',
             $transaction->vendor->nama_vendor ?? '-',
             $transaction->uraian,
-            number_format((float) $transaction->nominal, 0, ',', '.'),
-            $transaction->creator->name,
+            (float) $transaction->nominal, // angka murni, biar Excel yang format tampilannya
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'F' => '#,##0', // format ribuan otomatis sesuai regional Excel, tidak akan salah baca lagi
         ];
     }
 

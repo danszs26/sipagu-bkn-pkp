@@ -10,18 +10,34 @@ use App\Models\Vendor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $transactions = Transaction::with(['budgetCategory.masterKomponen', 'budgetCategory.anggaranTahun', 'vendor', 'creator'])
-            ->whereHas('budgetCategory.anggaranTahun', fn ($q) => $q->where('is_active', true))
-            ->orderByDesc('tanggal')
-            ->orderByDesc('id')
-            ->paginate(20);
+        $query = Transaction::with(['budgetCategory.masterKomponen', 'budgetCategory.anggaranTahun', 'vendor', 'creator']);
 
-        return view('transactions.index', compact('transactions'));
+        if ($request->filled('tahun_anggaran_id')) {
+            $query->whereHas('budgetCategory.anggaranTahun', fn ($q) => $q->where('id', $request->input('tahun_anggaran_id')));
+        } else {
+            $query->whereHas('budgetCategory.anggaranTahun', fn ($q) => $q->where('is_active', true));
+        }
+
+        if ($request->filled('bulan')) {
+            $query->whereMonth('tanggal', $request->input('bulan'));
+        }
+        if ($request->filled('dari_tanggal')) {
+            $query->where('tanggal', '>=', $request->input('dari_tanggal'));
+        }
+        if ($request->filled('sampai_tanggal')) {
+            $query->where('tanggal', '<=', $request->input('sampai_tanggal'));
+        }
+
+        $transactions = $query->orderByDesc('tanggal')->orderByDesc('id')->paginate(20)->withQueryString();
+        $tahunList = \App\Models\AnggaranTahun::orderByDesc('tahun')->get();
+
+        return view('transactions.index', compact('transactions', 'tahunList'));
     }
 
     public function bukti(Transaction $transaction)
@@ -123,9 +139,10 @@ class TransactionController extends Controller
             $nominalBaru = (float) $validated['nominal'];
 
             $vendorId = $validated['vendor_id'] ?? null;
-            if (!empty($validated['vendor_baru'])) {
+            $vendorBaru = $validated['vendor_baru'] ?? null;
+            if (!empty($vendorBaru)) {
                 $vendor = \App\Models\Vendor::firstOrCreate(
-                    ['nama_vendor' => trim($validated['vendor_baru'])],
+                    ['nama_vendor' => trim($vendorBaru)],
                     ['is_active' => true, 'created_by' => $request->user()->id]
                 );
                 $vendorId = $vendor->id;
@@ -146,12 +163,15 @@ class TransactionController extends Controller
                 'budget_category_id' => $category->id,
                 'vendor_id' => $vendorId,
                 'nominal' => $nominalBaru,
-                'uraian' => $validated['uraian'],
+                'uraian' => $validated['uraian'] ?? $transaction->uraian,
                 'updated_by' => $request->user()->id,
             ];
 
+            // Bukti fisik OPSIONAL saat edit — biarkan file lama kalau tidak diganti
             if ($request->hasFile('bukti_file')) {
-                Storage::disk('private')->delete($transaction->bukti_file_path);
+                if ($transaction->bukti_file_path && Storage::disk('private')->exists($transaction->bukti_file_path)) {
+                    Storage::disk('private')->delete($transaction->bukti_file_path);
+                }
                 $data['bukti_file_path'] = $request->file('bukti_file')->store('bukti-transaksi', 'private');
                 $data['bukti_file_original_name'] = $request->file('bukti_file')->getClientOriginalName();
             }

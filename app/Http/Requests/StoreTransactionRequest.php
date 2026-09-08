@@ -18,7 +18,7 @@ class StoreTransactionRequest extends FormRequest
             'budget_category_id' => ['required', 'exists:budget_categories,id'],
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'vendor_baru' => ['nullable', 'string', 'max:255'],
-            'nominal' => ['required', 'numeric', 'min:1000', 'multiple_of:100'],
+            'nominal' => ['required', 'numeric', 'min:1'],
             'uraian' => ['required', 'string', 'min:5', 'max:500'],
             'bukti_file' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'idempotency_token' => ['required', 'uuid', 'unique:transactions,idempotency_token'],
@@ -29,8 +29,8 @@ class StoreTransactionRequest extends FormRequest
     {
         return [
             'bukti_file.required' => 'Bukti fisik (kuitansi/nota/invoice) wajib diunggah.',
-            'nominal.min' => 'Nominal minimal Rp1.000.',
-            'nominal.multiple_of' => 'Nominal harus kelipatan Rp100 (sesuai pecahan rupiah).',
+            'nominal.min' => 'Nominal minimal Rp1.',
+            //'nominal.multiple_of' => 'Nominal harus kelipatan Rp100 (sesuai pecahan rupiah).',
             'idempotency_token.unique' => 'Transaksi ini sudah pernah dikirim sebelumnya (double submit terdeteksi).',
         ];
     }

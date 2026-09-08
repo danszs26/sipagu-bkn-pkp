@@ -39,10 +39,23 @@
         .ttd-table td { vertical-align: top; }
         .ttd-content { width: 45%; text-align: center; }
         .ttd-space { height: 60px; }
+        .ttd-anchor { margin: 4px 0; color: #000; }
         .ttd-nama { font-weight: bold; text-decoration: underline; margin: 0; }
         .ttd-nip { margin: 2px 0 0; }
 
         .page-break { page-break-before: always; }
+
+        .disclaimer-wrapper {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            background: #fff;
+        }
+        .disclaimer-table { width: 100%; border-collapse: collapse; }
+        .disclaimer-table td { border: none; vertical-align: middle; padding: 0; font-size: 9px; }
+        .disclaimer-logo { width: 110px; text-align: right; }
+        .disclaimer-logo img { width: 100px; }
     </style>
 </head>
 <body>
@@ -184,11 +197,27 @@
                 <p>Pangkalpinang, {{ now()->translatedFormat('d F Y') }}</p>
                 <p>{{ $pejabat->jabatan ?? 'Kepala UPT BKN Pangkalpinang' }},</p>
                 <div class="ttd-space"></div>
+                <p class="ttd-anchor">#</p>
                 <p class="ttd-nama">{{ $pejabat->nama ?? '(Nama Pejabat)' }}</p>
                 <p class="ttd-nip">NIP. {{ $pejabat->nip ?? '..........................' }}</p>
             </td>
         </tr>
     </table>
+
+    <div class="disclaimer-wrapper">
+        <table class="disclaimer-table">
+            <tr>
+                <td>
+                    - UU ITE No 11 Tahun 2008 Pasal 5 Ayat 1<br>
+                    "Informasi Elektronik dan/atau Dokumen Elektronik dan/atau hasil cetaknya merupakan alat bukti hukum yang sah."<br>
+                    - Dokumen ini telah ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan BSrE
+                </td>
+                <td class="disclaimer-logo">
+                    <img src="{{ public_path('images/logo-bsre.png') }}" alt="Logo BSrE">
+                </td>
+            </tr>
+        </table>
+    </div>
 
 </body>
 </html>

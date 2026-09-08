@@ -69,9 +69,9 @@
                             <td class="px-3 py-1.5">
                                 <span class="bg-gray-100 text-gray-600 font-mono px-1.5 py-0.5 rounded">{{ $trx->budgetCategory->masterKomponen->kode ?? '-' }}</span>
                             </td>
-                            <td class="px-3 py-1.5 max-w-[180px] truncate">{{ $trx->budgetCategory->uraian ?? '-' }}</td>
-                            <td class="px-3 py-1.5">{{ $trx->vendor->nama_vendor ?? '—' }}</td>
-                            <td class="px-3 py-1.5 max-w-[160px] truncate">{{ $trx->uraian }}</td>
+                            <td class="px-3 py-1.5 max-w-[220px] whitespace-normal break-words">{{ $trx->budgetCategory->uraian ?? '-' }}</td>
+                            <td class="px-3 py-1.5 max-w-[120px] whitespace-normal break-words">{{ $trx->vendor->nama_vendor ?? '—' }}</td>
+                            <td class="px-3 py-1.5 max-w-[200px] whitespace-normal break-words">{{ $trx->uraian }}</td>
                             <td class="px-3 py-1.5 text-right font-medium text-red-600 whitespace-nowrap">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</td>
                             <td class="px-3 py-1.5 text-gray-500 whitespace-nowrap">{{ $trx->creator->name }}</td>
                             <td class="px-3 py-1.5 text-center">

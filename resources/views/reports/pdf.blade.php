@@ -3,27 +3,33 @@
 <head>
     <meta charset="utf-8">
     <style>
-        body { font-family: sans-serif; font-size: 11px; color: #222; }
-        h2 { margin-bottom: 10px; }
+        body { font-family: sans-serif; font-size: 11px; color: #222; margin-bottom: 26mm; }
+        h1 { margin-bottom: 10px; }
+        h2 { margin-top: -10px; margin-bottom: -5px; }
         table { width: 100%; border-collapse: collapse; }
-        th { border: 1px solid #ddd; padding: 6px 8px; text-align: center; }
+        th { border: 1px solid #ddd; padding: 6px 8px; text-align: center; background: #f3f4f6; }
         td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
-        th { background: #f3f4f6; }
         .text-center { text-align: center; }
-        .text-right { text-align: left; }
-        .keluar { color: #dc2626; }
+        .text-right { text-align: right; }
+        .keluar { color: #222; }
+        .total { color: #222; font-weight: bold; }
+        .periode-filter {
+            margin-top: -5px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            color: #444;
+        }
         .summary-table { width: auto; border: none; margin-bottom: 14px; }
         .summary-table td { border: none; padding: 0; }
 
         .ttd-table { width: 100%; margin-top: 40px; border-collapse: collapse; page-break-inside: avoid; }
         .ttd-table td { vertical-align: top; border: none; }
-        .ttd-content { width: 45%; text-align: center; }
-        .ttd-space { height: 35px; }
+        .ttd-content { width: 25%; text-align: left; }
+        .ttd-space { height: 65px; }
         .ttd-anchor { margin: 4px 0; }
-        .ttd-nama { font-weight: bold; text-decoration: underline; margin: 0; }
+        .ttd-nama { font-weight: bold; margin: 0; }
         .ttd-nip { margin: 2px 0 0; }
 
-        body { margin-bottom: 26mm; }
         .disclaimer-wrapper {
             position: fixed;
             left: 0; right: 0; bottom: 0;
@@ -38,15 +44,35 @@
     </style>
 </head>
 <body>
-    <h2>Laporan Keuangan</h2>
-
-    <table class="summary-table">
+    <table style="width: 100%; border: none; margin-bottom: 10px;">
         <tr>
-            <td><strong>Total Pengeluaran:</strong></td>
-            <td class="keluar" style="padding-left:8px;">Rp {{ number_format($summary['total_pengeluaran'], 0, ',', '.') }}</td>
+            <td style="border: none; padding: 0; vertical-align: top;">
+                <h1 style="margin: 0 0 5px 0; font-size: 18px;">Laporan Keuangan</h1>
+                <h2 style="margin: 0; font-size: 14px;">
+                    <strong>Total Pengeluaran:</strong> 
+                    <span class="total">Rp {{ number_format($summary['total_pengeluaran'], 0, ',', '.') }}</span>
+                </h2>
+            </td>
+            <td style="border: none; padding: 0; text-align: right; vertical-align: bottom;">
+                <p class="periode-filter" style="margin: 0; font-size: 11px; color: #444;">
+                    <strong>Periode filter:</strong>
+                    @if ($dariTanggal && $sampaiTanggal)
+                        {{ \Carbon\Carbon::parse($dariTanggal)->format('d/m/Y') }}
+                        -
+                        {{ \Carbon\Carbon::parse($sampaiTanggal)->format('d/m/Y') }}
+                    @elseif ($dariTanggal)
+                        Mulai {{ \Carbon\Carbon::parse($dariTanggal)->format('d/m/Y') }}
+                    @elseif ($sampaiTanggal)
+                        - {{ \Carbon\Carbon::parse($sampaiTanggal)->format('d/m/Y') }}
+                    @else
+                        Semua periode
+                    @endif
+                </p>
+            </td>
         </tr>
     </table>
 
+    {{-- Pembungkus table ditambahkan di sini --}}
     <table>
         <thead>
             <tr>
@@ -66,7 +92,7 @@
                     <td>{{ $trx->budgetCategory->uraian ?? '-' }}</td>
                     <td>{{ $trx->vendor->nama_vendor ?? '-' }}</td>
                     <td>{{ $trx->uraian }}</td>
-                    <td class="text-right keluar">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
             @if ($transactions->isEmpty())
@@ -85,7 +111,7 @@
             <td></td>
             <td class="ttd-content">
                 <p>Pangkalpinang, {{ \Carbon\Carbon::parse($tanggalCetak)->translatedFormat('d F Y') }}</p>
-                <p>{{ $pejabat->jabatan ?? 'Kepala Kantor UPT BKN Pangkalpinang' }}</p>
+                <p>{{ $pejabat->jabatan ?? 'Kepala Kantor UPT BKN Pangkalpinang,' }}</p>
                 <div class="ttd-space"></div>
                 <p class="ttd-anchor">#</p>
                 <p class="ttd-nama">{{ $pejabat->nama ?? '(Nama Pejabat)' }}</p>

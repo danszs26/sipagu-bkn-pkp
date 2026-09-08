@@ -105,14 +105,39 @@ class ReportController extends Controller
         $this->authorize('export', Transaction::class);
         $transactions = $this->buildQuery($request)->get();
 
-        $summary = ['total_pengeluaran' => $transactions->sum('nominal')];
-        $tanggalCetak = $request->filled('tanggal_cetak') ? $request->input('tanggal_cetak') : now()->format('Y-m-d');
+        $summary = [
+            'total_pengeluaran' => $transactions->sum('nominal')
+        ];
+
+        $tanggalCetak = $request->filled('tanggal_cetak')
+            ? $request->input('tanggal_cetak')
+            : now()->format('Y-m-d');
+
+        // Ambil periode filter
+        $dariTanggal = $request->input('dari_tanggal');
+        $sampaiTanggal = $request->input('sampai_tanggal');
+
         $pejabat = PejabatPenandatangan::where('is_active', true)->first();
 
-        ActivityLog::catat('exported', 'Transaction', null, 'Export laporan ke PDF (' . $transactions->count() . ' baris)');
+        ActivityLog::catat(
+            'exported',
+            'Transaction',
+            null,
+            'Export laporan ke PDF (' . $transactions->count() . ' baris)'
+        );
 
-        $pdf = Pdf::loadView('reports.pdf', compact('transactions', 'summary', 'tanggalCetak', 'pejabat'))->setPaper('a4', 'landscape');
-        return $pdf->download('laporan-keuangan-' . now()->format('Ymd-His') . '.pdf');
+        $pdf = Pdf::loadView('reports.pdf', compact(
+            'transactions',
+            'summary',
+            'tanggalCetak',
+            'pejabat',
+            'dariTanggal',
+            'sampaiTanggal'
+        ))->setPaper('a4', 'landscape');
+
+        return $pdf->download(
+            'laporan-keuangan-' . now()->format('Ymd-His') . '.pdf'
+        );
     }
 
     /**

@@ -47,7 +47,7 @@
     <table style="width: 100%; border: none; margin-bottom: 10px;">
         <tr>
             <td style="border: none; padding: 0; vertical-align: top;">
-                <h1 style="margin: 0 0 5px 0; font-size: 18px;">Laporan Keuangan</h1>
+                <h1 style="margin: 0 0 5px 0; font-size: 18px;">Rekapitulasi Pengeluaran Kantor UPT BKN Pangkalpinang</h1>
                 <h2 style="margin: 0; font-size: 14px;">
                     <strong>Total Pengeluaran:</strong> 
                     <span class="total">Rp {{ number_format($summary['total_pengeluaran'], 0, ',', '.') }}</span>
@@ -58,12 +58,12 @@
                     <strong>Periode filter:</strong>
                     @if ($dariTanggal && $sampaiTanggal)
                         {{ \Carbon\Carbon::parse($dariTanggal)->format('d/m/Y') }}
-                        -
+                        s.d
                         {{ \Carbon\Carbon::parse($sampaiTanggal)->format('d/m/Y') }}
                     @elseif ($dariTanggal)
                         Mulai {{ \Carbon\Carbon::parse($dariTanggal)->format('d/m/Y') }}
                     @elseif ($sampaiTanggal)
-                        - {{ \Carbon\Carbon::parse($sampaiTanggal)->format('d/m/Y') }}
+                        s.d {{ \Carbon\Carbon::parse($sampaiTanggal)->format('d/m/Y') }}
                     @else
                         Semua periode
                     @endif

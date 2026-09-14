@@ -23,6 +23,7 @@ class ReportController extends Controller
         $vendors = Vendor::orderBy('nama_vendor')->get();
         $tahunList = AnggaranTahun::orderByDesc('tahun')->get();
 
+        $allTransactionIds = $data->pluck('id')->values();
         $summary = ['total_pengeluaran' => $data->sum('nominal')];
 
         $periode = $request->input('periode', 'harian');
@@ -53,7 +54,7 @@ class ReportController extends Controller
 
         return view('reports.index', compact(
             'data', 'categories', 'vendors', 'tahunList', 'summary', 'grouped', 'periode',
-            'komponenTahun', 'totalPerKomponen'
+            'komponenTahun', 'totalPerKomponen', 'allTransactionIds'
         ));
     }
 
@@ -92,8 +93,12 @@ class ReportController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $this->authorize('export', Transaction::class);
+         $this->authorize('export', Transaction::class);
         $transactions = $this->buildQuery($request)->get();
+
+        if ($request->filled('transaction_ids')) {
+            $transactions = $transactions->whereIn('id', $request->input('transaction_ids'))->values();
+        }
 
         ActivityLog::catat('exported', 'Transaction', null, 'Export laporan ke Excel (' . $transactions->count() . ' baris)');
 
@@ -105,9 +110,11 @@ class ReportController extends Controller
         $this->authorize('export', Transaction::class);
         $transactions = $this->buildQuery($request)->get();
 
-        $summary = [
-            'total_pengeluaran' => $transactions->sum('nominal')
-        ];
+        if ($request->filled('transaction_ids')) {
+            $transactions = $transactions->whereIn('id', $request->input('transaction_ids'))->values();
+        }
+
+        $summary = ['total_pengeluaran' => $transactions->sum('nominal')];
 
         $tanggalCetak = $request->filled('tanggal_cetak')
             ? $request->input('tanggal_cetak')

@@ -182,7 +182,7 @@
             </div>
 
             {{-- ===== Filter & laporan ad-hoc (fleksibel per tanggal/kategori) ===== --}}
-            <form method="GET" class="bg-white rounded-lg shadow p-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+            <form method="GET" id="reportFilterForm" class="bg-white rounded-lg shadow p-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Tahun Anggaran</label>
                     <select name="tahun_anggaran_id" class="w-full rounded-md border-gray-300 text-sm">
@@ -239,36 +239,55 @@
                 </div>
             </form>
 
-            <div class="bg-white rounded-lg shadow p-4">
-                <p class="text-xs text-gray-500">Total Pengeluaran (sesuai filter)</p>
-                <p class="text-xl font-bold text-red-600">Rp {{ number_format($summary['total_pengeluaran'], 0, ',', '.') }}</p>
-            </div>
+            <div x-data="{ selected: @js($allTransactionIds), allIds: @js($allTransactionIds) }">
 
-            @foreach ($grouped as $label => $items)
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-2 font-medium text-sm text-gray-700">{{ $label }}</div>
-                    <table class="min-w-full text-sm">
-                        <tbody class="divide-y">
-                            @foreach ($items as $trx)
-                                <tr>
-                                    <td class="px-4 py-2 font-mono text-xs">{{ $trx->no_referensi }}</td>
-                                    <td class="px-4 py-2">{{ $trx->tanggal->format('d-m-Y') }}</td>
-                                    <td class="px-4 py-2">[{{ $trx->budgetCategory->masterKomponen->kode ?? '-' }}] {{ $trx->budgetCategory->uraian ?? '-' }}</td>
-                                    <td class="px-4 py-2">{{ $trx->vendor->nama_vendor ?? '—' }}</td>
-                                    <td class="px-4 py-2">{{ $trx->uraian }}</td>
-                                    <td class="px-4 py-2 text-right font-medium text-red-600">
-                                        Rp {{ number_format($trx->nominal, 0, ',', '.') }}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <p class="text-xs text-gray-500">Total Pengeluaran (sesuai filter)</p>
+                    <p class="text-xl font-bold text-red-600">Rp {{ number_format($summary['total_pengeluaran'], 0, ',', '.') }}</p>
+
+                    <label class="flex items-center gap-2 text-sm mt-3 pt-3 border-t border-gray-100 cursor-pointer">
+                        <input type="checkbox" :checked="allIds.length > 0 && selected.length === allIds.length"
+                            @change="selected = $event.target.checked ? [...allIds] : []"
+                            class="rounded border-gray-300">
+                        <span class="font-medium">Pilih Semua</span>
+                        <span class="text-xs text-gray-400" x-text="'(' + selected.length + ' dari ' + allIds.length + ' dipilih)'"></span>
+                    </label>
+                    <p class="text-xs text-gray-400 mt-1">Hanya transaksi yang dicentang yang akan ikut ter-export.</p>
                 </div>
-            @endforeach
 
-            @if ($grouped->isEmpty())
-                <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">Tidak ada data untuk filter ini.</div>
-            @endif
+                @foreach ($grouped as $label => $items)
+                    <div class="bg-white rounded-lg shadow overflow-hidden mt-4">
+                        <div class="bg-gray-50 px-4 py-2 font-medium text-sm text-gray-700">{{ $label }}</div>
+                        <table class="min-w-full text-sm">
+                            <tbody class="divide-y">
+                                @foreach ($items as $trx)
+                                    <tr>
+                                        <td class="px-4 py-2 w-8">
+                                            <input type="checkbox" name="transaction_ids[]" value="{{ $trx->id }}" form="reportFilterForm"
+                                                :checked="selected.includes({{ $trx->id }})"
+                                                @change="$event.target.checked ? selected.push({{ $trx->id }}) : selected = selected.filter(id => id !== {{ $trx->id }})"
+                                                class="rounded border-gray-300">
+                                        </td>
+                                        <td class="px-4 py-2 font-mono text-xs">{{ $trx->no_referensi }}</td>
+                                        <td class="px-4 py-2">{{ $trx->tanggal->format('d-m-Y') }}</td>
+                                        <td class="px-4 py-2">[{{ $trx->budgetCategory->masterKomponen->kode ?? '-' }}] {{ $trx->budgetCategory->uraian ?? '-' }}</td>
+                                        <td class="px-4 py-2">{{ $trx->vendor->nama_vendor ?? '—' }}</td>
+                                        <td class="px-4 py-2">{{ $trx->uraian }}</td>
+                                        <td class="px-4 py-2 text-right font-medium text-red-600">
+                                            Rp {{ number_format($trx->nominal, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endforeach
+
+                @if ($grouped->isEmpty())
+                    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400 mt-4">Tidak ada data untuk filter ini.</div>
+                @endif
+
+            </div>
         </div>
     </div>
 </x-app-layout>

@@ -22,7 +22,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ old('tanggal', $transaction->tanggal->format('Y-m-d')) }}" max="{{ date('Y-m-d') }}" required
+                        <input type="date" name="tanggal" value="{{ old('tanggal', $transaction->tanggal->format('Y-m-d')) }}" required
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
 

@@ -14,7 +14,7 @@ class UpdateTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tanggal' => ['required', 'date', 'before_or_equal:today'],
+            'tanggal' => ['required', 'date'],
             'budget_category_id' => ['required', 'exists:budget_categories,id'],
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'vendor_baru' => ['nullable', 'string', 'max:255'],

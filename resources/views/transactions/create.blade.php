@@ -129,22 +129,33 @@
     </div>
 
     @push('scripts')
-    <script>
-        document.getElementById('idempotency_token').value = crypto.randomUUID();
+        <script>
+        function generateUUID() {
+                if (crypto.randomUUID) {
+                    return crypto.randomUUID();
+                }
 
-        const displayInput = document.getElementById('nominal_display');
-        const hiddenInput = document.getElementById('nominal_value');
+                return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );
+                }
 
-        displayInput.addEventListener('input', function () {
-            let raw = this.value.replace(/\D/g, '');
-            hiddenInput.value = raw;
-            this.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
-        });
+        
+            document.getElementById('idempotency_token').value = generateUUID();
+            //console.log(idempotency_token);
+            const displayInput = document.getElementById('nominal_display');
+            const hiddenInput = document.getElementById('nominal_value');
 
-        document.getElementById('trxForm').addEventListener('submit', function () {
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('submitBtn').innerText = 'Menyimpan...';
-        });
-    </script>
+            displayInput.addEventListener('input', function () {
+                let raw = this.value.replace(/\D/g, '');
+                hiddenInput.value = raw;
+                this.value = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
+            });
+
+            document.getElementById('trxForm').addEventListener('submit', function () {
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').innerText = 'Menyimpan...';
+            });
+        </script>
     @endpush
 </x-app-layout>

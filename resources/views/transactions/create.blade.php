@@ -130,6 +130,7 @@
 
     @push('scripts')
         <script>
+            //change idempotency
         function generateUUID() {
                 if (crypto.randomUUID) {
                     return crypto.randomUUID();
